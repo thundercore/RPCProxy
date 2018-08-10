@@ -1,53 +1,55 @@
+# RPCProxy
 
+## About
 
-# Reverse Proxy In Go With Performance Analysis
+At Thunder, we found ourselves wanting a tool to help us monitor and log the details of our RPC calls. We forked [@ymedialabs' ReverseProxy](https://github.com/ymedialabs/ReverseProxy) and made it pick out the different RPC calls being made.
+
+## Prerequisites
+
+ - Go Version 1.6+
+     - Install via https://golang.org/doc/install
 
 ## Getting Started
 
-Just Pull this go source code and run the binary file. This is built in order to analyze the HTTP traffic that is coming to your server.
+After cloning this repository, run the build script with `sh build.sh`. This will clone the [`go-ethereum`](https://github.com/ethereum/go-ethereum/) repository into your directory (under `src`), adjust your `GOPATH`, and build the binary for RPCProxy.
 
-HTTP Traffic from outside <-> GoProxy Server <-> Main Server
+## Running RPCProxy
 
-This goproxy server is responsible for accepting the HTTP request from outside world and route them to the actual server. The current version of this proxy server helps to analyze the server like response time, average response time for a particular path, printing request and response body for every HTTP request etc. The output is set to a terminal where you run the binary file.
+By default, RPCProxy will be running on `http://localhost:9999` and it will be forwarding the requests to http://testnet-rpc.thundercore.com:8545. You can specify the forwarding "port" and "url"  by using the `-port` and `-url` command line options.
 
-This Server prints request body & response body of every request. Used http.DumpResponse which helps to copy the http response in a string format.
-
-### Prerequisites
-
-Go Version 1.6
-if not installed you can follow this documentation https://golang.org/doc/install
-
-## Deployment
-You can run the program with the "port" and "url" sent as command line arguments. If not set by default Reverse Proxy will be running on port 9090 and it will be redirecting the request to http://localhost:8080.
-
-Make sure you run your program at 8080 port or specify port while running the program.
-
-Run Commands:
-
-If you want to host ReverseProxy on 9090 and redirect the request to the port 5000 , run following command
-
+Running the binary:
 ```
-./ReverseProxy -port=9090 -url=http://localhost:5000
-```
-or
-
-```
-./ReverseProxy
+./RPCProxy
 ```
 
-Note: If you modify anything in the code please do build the code once so that new binary file will be generated and you run the modified binary go file to get expected results.
+Setting new parameters to run the binary with:
+```
+./RPCProxy -port=9090 -url=http://other_rpc:8545
+```
+
+Outputting the contents to a log file:
+```
+./RPCProxy 2>log.txt
+```
 
 ## Output
 
-When you run the ReverseProxy server, It will print the port where Reverse Proxy is running and where it is redirecting the request to.
+When you run RPCProxy, it will print the port where the proxy is running and where it is redirecting the request to.
 
-![picture](images/server-running.png)
+When requests start being made, it will print the RPC call and parameters used, the HTTP headers, the raw transaction data, and the response to `stderr`. It should look something like this:
 
-Following screenshot shows the things that are captured after making one of the login POST request through reverse proxy.
+```
+eth_getBalance [0x9a78d67096ba0c7c1bcdc0a8742649bc399119c0 latest]
+2018/08/06 17:23:57 ----------------New Request-------------------------
+ {"id":5289471075661898,"jsonrpc":"2.0","params":["0x9a78d67096ba0c7c1bcdc0a8742649bc399119c0","latest"],"method":"eth_getBalance"}  
+    Response Time 107301342 
+    Response Body------
+ HTTP/1.1 200 OK
+Content-Length: 76
+Access-Control-Allow-Origin: chrome-extension://nkbihfbeogaeaoehlefnkodbefgpgknn
+Content-Type: application/json
+Date: Mon, 06 Aug 2018 21:23:57 GMT
+Vary: Origin
 
-![picture](images/request-analysis.png)
-
-
-Whenever there is a http request , we are printing request body and response body along with headers.Along with that we are measuring the time for each api. Currently we are storing the total response time, total no of api calls for a particular path.
-
-Thanks!
+{"jsonrpc":"2.0","id":5289471075661898,"result":"0x49fb0a92b073f3c1a2f6cc"}
+```

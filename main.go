@@ -33,10 +33,10 @@ var redirecturl *string
 
 func main() {
 	const (
-		defaultPort        = ":9090"
-		defaultPortUsage   = "default server port, ':9090'"
-		defaultTarget      = "http://127.0.0.1:8080"
-		defaultTargetUsage = "default redirect url, 'http://127.0.0.1:8080'"
+		defaultPort        = "9999"
+		defaultPortUsage   = "default server port, ':9999'"
+		defaultTarget      = "http://testnet-rpc.thundercore.com:8545"
+		defaultTargetUsage = "default redirect url, 'testnet-rpc.thundercore.com:8545'"
 	)
 
 	// flags
@@ -50,8 +50,6 @@ func main() {
 
 	// proxy
 	proxy := NewProxy(*redirecturl)
-
-	http.HandleFunc("/proxyServer", ProxyServer)
 
 	// server redirection
 	http.HandleFunc("/", proxy.handle)
